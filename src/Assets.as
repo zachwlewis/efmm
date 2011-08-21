@@ -13,6 +13,7 @@ package
 		// Levels
 		[Embed(source = '../lvl/t.oel', mimeType = 'application/octet-stream')] public static const LVL_T:Class;
 		[Embed(source = '../lvl/1.oel', mimeType = 'application/octet-stream')] public static const LVL_1:Class;
+		[Embed(source = '../lvl/2.oel', mimeType = 'application/octet-stream')] public static const LVL_2:Class;
 	}
 
 }

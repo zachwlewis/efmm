@@ -25,25 +25,30 @@ package entities
 		public function Arrow(ap:int)
 		{
 			var d:uint = FP.rand(4);
-			_attachPoint = ap;			
+			_attachPoint = ap;
+			var color:uint;
 			
 			switch(d)
 			{
 				case 0:
 					// up
 					_direction = new Point(0, -1);
+					color = 0x00FF00;
 					break;
 				case 1:
 					// right
 					_direction = new Point(1, 0);
+					color = 0xFF8000;
 					break;
 				case 2:
 					// down
 					_direction = new Point(0, 1);
+					color = 0xFF0080;
 					break;
 				case 3:
 					// left
 					_direction = new Point( -1, 0);
+					color = 0x0080C0;
 					break;
 				default:
 					// what the fuck
@@ -52,6 +57,7 @@ package entities
 			
 			_image = new Image(Assets.GFX_ARROWS, new Rectangle(d * 12, 0, 12, 12));
 			graphic = _image;
+			_image.color = color;
 			_image.x = 2;
 			_image.y = 2;
 			

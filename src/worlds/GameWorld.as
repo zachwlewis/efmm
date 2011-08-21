@@ -1,7 +1,9 @@
 package worlds 
 {
 	import entities.Arrow;
+	import entities.Mover;
 	import entities.Player;
+	import entities.TickableEntity;
 	import flash.filters.ConvolutionFilter;
 	import flash.geom.Point;
 	import flash.media.Sound;
@@ -91,8 +93,15 @@ package worlds
 		protected function tick():void
 		{
 			var arrows:Vector.<Arrow> = new Vector.<Arrow>();
-			_bassline.play(SecondsPerBeat * 0.5);
+			_bassline.play(SecondsPerBeat * 0.1);
 			addArrow();
+			var ta:Vector.<TickableEntity> = new Vector.<TickableEntity>();
+			getClass(TickableEntity, ta);
+			for each(var e:TickableEntity in ta)
+			{
+				e.tick()
+			}
+			// We need to update our enemies.
 			if (_cursorArmed)
 			{
 				// Alright! We're going to fire off the move command, and play a note.
@@ -113,17 +122,11 @@ package worlds
 			}
 		}
 		
-		protected function playRandomNote(scale:Array):void
+		public function playRandomNote(scale:Array, duration:Number = 0.25):void
 		{
 			var keypressSound:Note;
-			var newNote:Number = FP.choose(scale);
-			/*while (newNote == _lastNote)
-			{
-				newNote = FP.choose(scale);
-			}*/
-			keypressSound = new Note(newNote);
-			keypressSound.play(SecondsPerBeat * 0.25);
-			_lastNote = newNote;
+			keypressSound = new Note(FP.choose(scale));
+			keypressSound.play(duration);
 		}
 		
 		protected function get SecondsPerBeat():Number
@@ -149,7 +152,7 @@ package worlds
 		protected function loadLevel(map:Class):void
 		{
 			var xml:XML = FP.getXML(map);
-			trace("Starting tiles");
+			var o:XML;
 			_tiles = new Tilemap(Assets.GFX_TILES, uint(xml.width), uint(xml.height), 16, 16);
 			_grid = new Vector.<Vector.<uint>>();
 			for (var i:uint = 0; i < 20; i++)
@@ -160,13 +163,21 @@ package worlds
 					_grid[i][j] = 0;
 				}
 			}
-			for each(var o:XML in xml.tiles.tile)
+			for each(o in xml.tiles.tile)
 			{
 				var tileCol:uint = uint(o.@x)/16;
 				var tileRow:uint = uint(o.@y)/16;
 				var tileType:uint = uint(o.@tx / 16);
-				_tiles.setTile(tileCol, tileRow, tileType);
-				_grid[tileCol][tileRow] = tileType + 1;
+				if (tileCol >= 0 && tileCol < 20 && tileRow >= 0 && tileRow < 14)
+				{
+					_tiles.setTile(tileCol, tileRow, tileType);
+					_grid[tileCol][tileRow] = tileType + 1;
+				}
+			}
+			
+			for each(o in xml.actors.mover)
+			{
+				add(new Mover(new Point(uint(o.@x) / 16, uint(o.@y) / 16), new Point(int(o.@horizontal), int(o.@vertical))));
 			}
 			
 			_player = new Player(new Point(uint(xml.actors.player.@x)/16, uint(xml.actors.player.@y)/16));

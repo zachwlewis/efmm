@@ -14,6 +14,7 @@ package
 		
 		// Types
 		public static const TYPE_ARROW:String = "arrow";
+		public static const TYPE_ENEMY:String = "enemy";
 	}
 
 }

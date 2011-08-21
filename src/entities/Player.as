@@ -10,7 +10,7 @@ package entities
 	 * Copyright 2011 The Game Studio (http://www.thegamestudio.net). All rights reserved.
 	 * @author Zachary Weston Lewis
 	 */
-	public class Player extends Entity 
+	public class Player extends TickableEntity 
 	{
 		protected var _image:Image;
 		protected var _gridLocation:Point;
@@ -27,6 +27,21 @@ package entities
 			x = _gridLocation.x * 16;
 			y = _gridLocation.y * 16;
 			layer = -1;
+			
+			setHitbox(16, 16);
+		}
+		
+		override public function update():void 
+		{
+			super.update();
+			if (collide(C.TYPE_ENEMY, x, y) != null)
+			{
+				for (var i:uint = 0; i < 20; i++)
+				{
+					GameWorld(world).playRandomNote(C.SCALE_A_MINOR, 10);
+					world.remove(this);
+				}
+			}
 		}
 		
 		public function move(p:Point):void

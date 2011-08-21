@@ -77,7 +77,7 @@ package sounds
 		public function play(length:Number):void {
 			_sound.addEventListener(SampleDataEvent.SAMPLE_DATA, onSampleData);
 			
-			var t:Timer = new Timer(length * 100,1);
+			var t:Timer = new Timer(length * 1000,1);
 			t.addEventListener(TimerEvent.TIMER_COMPLETE, function():void {
 				_sound.removeEventListener(SampleDataEvent.SAMPLE_DATA, onSampleData );
 				_channel = null;

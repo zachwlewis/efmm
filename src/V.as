@@ -1,5 +1,7 @@
 package  
 {
+	import net.flashpunk.FP;
+	import sounds.Note;
 	/**
 	 * ...
 	 * @author ...
