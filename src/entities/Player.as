@@ -3,6 +3,7 @@ package entities
 	import flash.display.BitmapData;
 	import flash.geom.Point;
 	import net.flashpunk.Entity;
+	import net.flashpunk.FP;
 	import net.flashpunk.graphics.Image;
 	import worlds.GameWorld;
 	
@@ -31,6 +32,12 @@ package entities
 			setHitbox(16, 16);
 		}
 		
+		public function isIce(b:Boolean):void
+		{
+			if (b) _image.color = 0x50A3FE;
+			else _image.color = 0xABD149;
+		}
+		
 		override public function update():void 
 		{
 			super.update();
@@ -38,28 +45,28 @@ package entities
 			{
 				for (var i:uint = 0; i < 20; i++)
 				{
-					GameWorld(world).playRandomNote(C.SCALE_A_MINOR, 10);
-					world.remove(this);
+					GameWorld(world).playRandomNote(null,1);
 				}
+				world.remove(this);
 			}
 		}
 		
-		public function move(p:Point):void
+		public function move(p:Point):Boolean
 		{
 			var xLoc:int = _gridLocation.x + p.x;
 			var yLoc:int = _gridLocation.y + p.y;
 			
 			var collidingArea:uint = GameWorld(world).Tiles[xLoc][yLoc];
-			trace(p, _gridLocation, "Player at:", xLoc, yLoc, "tile value:", collidingArea);
 			if (collidingArea == 1)
 			{
 				// Collided into a wall...
+				return false;
 			}
 			else 
 			{
 				if (collidingArea == 3)
 				{
-					trace("WINNAR!");
+					V.NextLevel();
 				}
 				_gridLocation.x = xLoc;
 				_gridLocation.y = yLoc;
@@ -67,6 +74,7 @@ package entities
 				x = _gridLocation.x * 16;
 				y = _gridLocation.y * 16;
 			}
+			return true;
 			
 		}
 		

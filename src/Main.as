@@ -18,6 +18,8 @@ package
 		{
 			super(320, 240);
 			FP.screen.scale = 2;
+			V.CurrentLevel = 0;
+			
 		}
 		
 		override public function init():void 
@@ -25,7 +27,7 @@ package
 			super.init();
 			trace("FlashPunk " + FP.VERSION + " has started.");
 			//FP.console.enable();
-			FP.world = new GameWorld(Assets.LVL_2);
+			FP.world = new GameWorld(Assets.LEVEL[V.CurrentLevel]);
 		}
 
 	}

@@ -2,7 +2,9 @@ package worlds
 {
 	import entities.Arrow;
 	import entities.Mover;
+	import entities.Pitfall;
 	import entities.Player;
+	import entities.SoundEntity;
 	import entities.TickableEntity;
 	import flash.filters.ConvolutionFilter;
 	import flash.geom.Point;
@@ -10,6 +12,7 @@ package worlds
 	import net.flashpunk.Entity;
 	import net.flashpunk.FP;
 	import net.flashpunk.graphics.Image;
+	import net.flashpunk.graphics.Text;
 	import net.flashpunk.graphics.Tilemap;
 	import net.flashpunk.masks.Grid;
 	import net.flashpunk.utils.Input;
@@ -23,6 +26,9 @@ package worlds
 	 */
 	public class GameWorld extends World 
 	{
+		protected var _doIce:Boolean;
+		protected var _multiplierDirection:Point;
+		protected var _doMultiplier:Boolean;
 		protected var _lastNote:Number;
 		protected var _currentScale:Array;
 		protected var _currentTime:Number;
@@ -34,6 +40,9 @@ package worlds
 		protected var _arrowCount:uint;
 		protected var _tiles:Tilemap;
 		protected var _grid:Vector.<Vector.<uint>>;
+		protected var _moveMultiplier:uint;
+		protected var _multiplierText:Text;
+		protected var _isIce:Boolean;
 		
 		public function get Tiles():Vector.<Vector.<uint>>
 		{
@@ -44,17 +53,18 @@ package worlds
 		{
 			_bpm = 120;
 			_currentTime = 0;
-			_currentScale = C.SCALE_A_MINOR;
 			_cursorArmed = false;
 			_lastNote = 0;
-			_bassline = new Note(_currentScale[0]);
-			_bassline.Volume = 0.2;
 			_cursor = new Image(Assets.GFX_CURSOR);
 			_cursor.alpha = 0.8;
 			Input.define(C.KEY_ACTION, [Key.ESCAPE]);
 			loadLevel(map);
 			V.ArrowLocation = 0;
 			_arrowCount = 0;
+			_moveMultiplier = 1;
+			_doMultiplier = false;
+			_isIce = false;
+			_doIce = false;
 		}
 		
 		override public function begin():void 
@@ -67,11 +77,22 @@ package worlds
 			}
 			addGraphic(_tiles,0,0,0);
 			addGraphic(_cursor, -1, 64, FP.screen.height - 16);
+			_multiplierText = new Text("",0,0,{align:"center", width:16})
+			addGraphic(_multiplierText, -1, 65, FP.screen.height - 17);
 		}
 		
 		override public function update():void 
 		{
 			super.update();
+			
+			if (_moveMultiplier > 1)
+			{
+				_multiplierText.text = _moveMultiplier.toString();
+			}
+			else
+			{
+				_multiplierText.text = "";
+			}
 			
 			_currentTime += FP.elapsed;
 			V.ArrowLocation -= FP.elapsed * ArrowSpeed;
@@ -88,12 +109,25 @@ package worlds
 				_cursor.alpha = 1;
 				_cursorArmed = true;				
 			}
+			
+			if (_cursorArmed)
+			{
+				_cursor.color = 0xE12ddd;
+			}
+			else if (_isIce)
+			{
+				_cursor.color = 0x50A3FE;
+			}
+			else
+			{
+				_cursor.color = 0xFFFFFF;
+			}
 		}
 		
 		protected function tick():void
 		{
 			var arrows:Vector.<Arrow> = new Vector.<Arrow>();
-			_bassline.play(SecondsPerBeat * 0.1);
+			add(new SoundEntity(_currentScale[0]/2,0,0.2));
 			addArrow();
 			var ta:Vector.<TickableEntity> = new Vector.<TickableEntity>();
 			getClass(TickableEntity, ta);
@@ -102,31 +136,85 @@ package worlds
 				e.tick()
 			}
 			// We need to update our enemies.
-			if (_cursorArmed)
+			if (_cursorArmed || _doMultiplier || _doIce)
 			{
 				// Alright! We're going to fire off the move command, and play a note.
 				playRandomNote(_currentScale);
-				_cursor.color = 0xffffff;
 				_cursor.alpha = 0.8;
 				_cursorArmed = false;
 				
-				
-				
-				// Get the fired thing.
-				var a:Arrow = Arrow(this.collidePoint(C.TYPE_ARROW, 72, FP.screen.height - 8));
-				if (a != null)
+				if (_doIce || _doMultiplier)
 				{
-					a.used();
-					_player.move(a.Direction);
+					if (_doMultiplier)
+					{
+						_moveMultiplier--;
+						_player.move(_multiplierDirection);
+						if (_moveMultiplier < 1)
+						{
+							_doMultiplier = false;
+							_moveMultiplier = 1;
+						}
+					}
+					if (_doIce)
+					{
+						_doIce = _player.move(_multiplierDirection);
+						_isIce = false;
+					}
+				}				
+				else
+				{
+					// Get the fired thing.
+					var a:Arrow = Arrow(this.collidePoint(C.TYPE_ARROW, 72, FP.screen.height - 8));
+					if (a != null)
+					{
+						a.used();
+						if (a.BlockType < 4)
+						{
+							if (_moveMultiplier > 1 || _isIce)
+							{
+								_multiplierDirection = a.Direction;
+								if (_moveMultiplier > 1)
+								{
+									_doMultiplier = true;
+									_moveMultiplier--;
+								}
+								if (_isIce) _doIce = true;
+							}
+							_player.move(a.Direction);
+						}
+						else if (a.BlockType == 4)
+						{
+							// Speed up.
+							_bpm += 10;
+							if (_bpm > 160) _bpm = 160;
+						}
+						else if (a.BlockType == 5)
+						{
+							// Slow down.
+							_bpm -= 10;
+							if (_bpm < 80) _bpm = 80;
+						}
+						else if (a.BlockType == 6)
+						{
+							// Freeze block! Chillin!
+							_isIce = true;
+							_cursor.color = 0x50A3FE;
+						}
+						else if (a.BlockType == 7)
+						{
+							// Move multiplier!!!
+							_moveMultiplier *= 2;
+							if (_moveMultiplier > 8) _moveMultiplier = 8;
+						}
+					}
 				}
 			}
 		}
 		
-		public function playRandomNote(scale:Array, duration:Number = 0.25):void
+		public function playRandomNote(scale:Array = null, duration:Number = 0):void
 		{
-			var keypressSound:Note;
-			keypressSound = new Note(FP.choose(scale));
-			keypressSound.play(duration);
+			if (scale == null) scale = _currentScale;
+			add(new SoundEntity(FP.choose(scale), duration, 0.5));
 		}
 		
 		protected function get SecondsPerBeat():Number
@@ -180,8 +268,28 @@ package worlds
 				add(new Mover(new Point(uint(o.@x) / 16, uint(o.@y) / 16), new Point(int(o.@horizontal), int(o.@vertical))));
 			}
 			
-			_player = new Player(new Point(uint(xml.actors.player.@x)/16, uint(xml.actors.player.@y)/16));
-		}		
+			for each(o in xml.actors.pitfall)
+			{
+				add(new Pitfall(new Point(uint(o.@x) / 16, uint(o.@y) / 16), o.@openDuration, o.@closedDuration, o.@initialDelay, o.@startOpen=="true"));
+			}
+			
+			_player = new Player(new Point(uint(xml.actors.player.@x) / 16, uint(xml.actors.player.@y) / 16));
+			
+			SetLevelScale(xml.@scale);
+			
+		}
+		
+		public function SetLevelScale(scale:String):void
+		{
+			_currentScale = C["SCALE_" + scale];			
+			trace("Level scale is " + scale);
+		}
+		
+		override public function end():void 
+		{
+			removeAll();
+			super.end();
+		}
 	}
 
 }

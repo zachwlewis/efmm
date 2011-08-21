@@ -30,7 +30,7 @@ package sounds
 		static public const PI_2_OVR_SR:Number = PI_2 / SAMPLE_RATE;
 		
 		protected var _sound:Sound;
-		protected var _channel:SoundChannel;
+		protected static var _channel:SoundChannel;
 		
 		protected var _frequency:Number = 240;
 		protected var _mainVolume:Number;
@@ -74,17 +74,15 @@ package sounds
 			updateWavelet();	
 		}
 		
-		public function play(length:Number):void {
+		public function play():void {
 			_sound.addEventListener(SampleDataEvent.SAMPLE_DATA, onSampleData);
-			
-			var t:Timer = new Timer(length * 1000,1);
-			t.addEventListener(TimerEvent.TIMER_COMPLETE, function():void {
-				_sound.removeEventListener(SampleDataEvent.SAMPLE_DATA, onSampleData );
-				_channel = null;
-			});
-			
-			t.start();
 			_channel = _sound.play();
+		}
+		
+		public function stop():void
+		{
+			_sound.removeEventListener(SampleDataEvent.SAMPLE_DATA, onSampleData );
+			_channel = null;
 		}
 		
 		protected function updateStep():void {
