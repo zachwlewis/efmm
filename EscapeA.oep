@@ -11,7 +11,7 @@
 	</tilesets>
 	
 	<objects>
-		<object name="player" image="player.png" width="16" height="16" />
+		<object name="player" image="player.png" width="16" height="16" limit="1" />
 	</objects>
 
 	<layers>

@@ -3,6 +3,7 @@ package worlds
 	import entities.Arrow;
 	import entities.Player;
 	import flash.filters.ConvolutionFilter;
+	import flash.geom.Point;
 	import flash.media.Sound;
 	import net.flashpunk.Entity;
 	import net.flashpunk.FP;
@@ -30,11 +31,11 @@ package worlds
 		protected var _cursorArmed:Boolean;
 		protected var _arrowCount:uint;
 		protected var _tiles:Tilemap;
-		protected var _grid:Grid;
+		protected var _grid:Vector.<Vector.<uint>>;
 		
-		public function get Tiles():Tilemap
+		public function get Tiles():Vector.<Vector.<uint>>
 		{
-			return _tiles;
+			return _grid;
 		}
 		
 		public function GameWorld(map:Class) 
@@ -46,11 +47,8 @@ package worlds
 			_lastNote = 0;
 			_bassline = new Note(_currentScale[0]);
 			_bassline.Volume = 0.2;
-			_player = new Player();
 			_cursor = new Image(Assets.GFX_CURSOR);
 			_cursor.alpha = 0.8;
-			_player.x = 16 * 8;
-			_player.y = 16 * 5;
 			Input.define(C.KEY_ACTION, [Key.ESCAPE]);
 			loadLevel(map);
 			V.ArrowLocation = 0;
@@ -153,17 +151,25 @@ package worlds
 			var xml:XML = FP.getXML(map);
 			trace("Starting tiles");
 			_tiles = new Tilemap(Assets.GFX_TILES, uint(xml.width), uint(xml.height), 16, 16);
-			_grid = new Grid(uint(xml.width), uint(xml.height), 16, 16);
+			_grid = new Vector.<Vector.<uint>>();
+			for (var i:uint = 0; i < 20; i++)
+			{
+				_grid[i] = new Vector.<uint>();
+				for (var j:uint = 0; j < 14; j++)
+				{
+					_grid[i][j] = 0;
+				}
+			}
 			for each(var o:XML in xml.tiles.tile)
 			{
-				trace("doin' tiles");
 				var tileCol:uint = uint(o.@x)/16;
 				var tileRow:uint = uint(o.@y)/16;
 				var tileType:uint = uint(o.@tx / 16);
 				_tiles.setTile(tileCol, tileRow, tileType);
+				_grid[tileCol][tileRow] = tileType + 1;
 			}
 			
-			addGraphic(_tiles.
+			_player = new Player(new Point(uint(xml.actors.player.@x)/16, uint(xml.actors.player.@y)/16));
 		}		
 	}
 

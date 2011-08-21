@@ -12,37 +12,46 @@ package entities
 	 */
 	public class Player extends Entity 
 	{
-		protected var playerImage:Image;
+		protected var _image:Image;
+		protected var _gridLocation:Point;
 		
-		public function Player() 
+		public function Player(location:Point) 
 		{
-			playerImage = new Image(new BitmapData(16, 16));
-			playerImage.color = 0xABD149;
+			_image = new Image(new BitmapData(16, 16));
+			_image.color = 0xABD149;
 			
-			graphic = playerImage;
+			graphic = _image;
+			
+			_gridLocation = new Point(location.x, location.y);
+			
+			x = _gridLocation.x * 16;
+			y = _gridLocation.y * 16;
+			layer = -1;
 		}
 		
 		public function move(p:Point):void
 		{
-			trace(x, y);
-			var xLoc:uint = x / 16;
-			var yLoc:uint = y / 16;
-			trace(xLoc, yLoc);
-			var collidingArea:uint = GameWorld(world).Tiles.getIndex(xLoc + p.x, yLoc + p.y)
-			trace(collidingArea);
-			/*if (collidingArea == 0)
+			var xLoc:int = _gridLocation.x + p.x;
+			var yLoc:int = _gridLocation.y + p.y;
+			
+			var collidingArea:uint = GameWorld(world).Tiles[xLoc][yLoc];
+			trace(p, _gridLocation, "Player at:", xLoc, yLoc, "tile value:", collidingArea);
+			if (collidingArea == 1)
 			{
 				// Collided into a wall...
 			}
-			else if (collidingArea == 2)
+			else 
 			{
-				trace("WINNAR!");
+				if (collidingArea == 3)
+				{
+					trace("WINNAR!");
+				}
+				_gridLocation.x = xLoc;
+				_gridLocation.y = yLoc;
+				
+				x = _gridLocation.x * 16;
+				y = _gridLocation.y * 16;
 			}
-			else
-			{*/
-				x += p.x * 16;
-				y += p.y * 16;	
-			//}
 			
 		}
 		
