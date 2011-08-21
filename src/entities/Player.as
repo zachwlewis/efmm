@@ -15,9 +15,11 @@ package entities
 	{
 		protected var _image:Image;
 		protected var _gridLocation:Point;
+		protected var _keys:Array;
 		
 		public function Player(location:Point) 
 		{
+			_keys = new Array();
 			_image = new Image(new BitmapData(16, 16));
 			_image.color = 0xABD149;
 			
@@ -49,6 +51,21 @@ package entities
 				}
 				world.remove(this);
 			}
+			
+			var k:KeyPickup = KeyPickup(collide(C.TYPE_KEY, x, y))
+			{
+				if (k != null)
+				{
+					// We hit a key! Let's grab it!
+					if (_keys[k.ID] == null)
+					{
+						_keys[k.ID] = 0;
+					}
+					_keys[k.ID]++;
+					world.remove(k);
+					trace(_keys);
+				}
+			}
 		}
 		
 		public function move(p:Point):Boolean
@@ -64,6 +81,24 @@ package entities
 			}
 			else 
 			{
+				// Check with door colisions.
+				var d:Door = Door(collide(C.TYPE_DOOR, xLoc*16, yLoc*16));
+				if ( d != null)
+				{
+					trace("Uh oh... we'll hit a door!");
+					// We have a door collision. Check against have keys.
+					if (_keys[d.ID] != null && _keys[d.ID] > 0)
+					{
+						_keys[d.ID]--;
+						world.remove(d);
+					}
+					else
+					{
+						// Nope, don't have it! We can't move!
+						_keys[d.ID] = 0;
+						return false;
+					}
+				}
 				if (collidingArea == 3)
 				{
 					V.NextLevel();

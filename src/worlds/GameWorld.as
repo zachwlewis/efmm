@@ -1,6 +1,8 @@
 package worlds 
 {
 	import entities.Arrow;
+	import entities.Door;
+	import entities.KeyPickup;
 	import entities.Mover;
 	import entities.Pitfall;
 	import entities.Player;
@@ -43,6 +45,7 @@ package worlds
 		protected var _moveMultiplier:uint;
 		protected var _multiplierText:Text;
 		protected var _isIce:Boolean;
+		protected var _currentArrow:Arrow;
 		
 		public function get Tiles():Vector.<Vector.<uint>>
 		{
@@ -73,7 +76,8 @@ package worlds
 			add(_player);
 			for (var i:uint = 0; i <= FP.screen.width; i += 16)
 			{
-				var a:Arrow = Arrow(add(new Arrow(GetNextArrowLocation())));				
+				var a:Arrow = Arrow(add(new Arrow(GetNextArrowLocation())));
+				if (i == 80) _currentArrow = a;
 			}
 			addGraphic(_tiles,0,0,0);
 			addGraphic(_cursor, -1, 64, FP.screen.height - 16);
@@ -129,15 +133,18 @@ package worlds
 			var arrows:Vector.<Arrow> = new Vector.<Arrow>();
 			add(new SoundEntity(_currentScale[0]/2,0,0.2));
 			addArrow();
-			var ta:Vector.<TickableEntity> = new Vector.<TickableEntity>();
-			getClass(TickableEntity, ta);
-			for each(var e:TickableEntity in ta)
-			{
-				e.tick()
-			}
 			// We need to update our enemies.
 			if (_cursorArmed || _doMultiplier || _doIce)
 			{
+				// So, the player is going to do something. Move the enemies.
+				var ta:Vector.<TickableEntity> = new Vector.<TickableEntity>();
+				getClass(TickableEntity, ta);
+				for each(var e:TickableEntity in ta)
+				{
+					e.tick()
+				}
+				
+				
 				// Alright! We're going to fire off the move command, and play a note.
 				playRandomNote(_currentScale);
 				_cursor.alpha = 0.8;
@@ -164,57 +171,57 @@ package worlds
 				else
 				{
 					// Get the fired thing.
-					var a:Arrow = Arrow(this.collidePoint(C.TYPE_ARROW, 72, FP.screen.height - 8));
-					if (a != null)
+					var a:Arrow = _currentArrow;
+					a.used();
+					if (a.BlockType < 4)
 					{
-						a.used();
-						if (a.BlockType < 4)
+						if (_moveMultiplier > 1 || _isIce)
 						{
-							if (_moveMultiplier > 1 || _isIce)
+							_multiplierDirection = a.Direction;
+							if (_moveMultiplier > 1)
 							{
-								_multiplierDirection = a.Direction;
-								if (_moveMultiplier > 1)
-								{
-									_doMultiplier = true;
-									_moveMultiplier--;
-								}
-								if (_isIce) _doIce = true;
+								_doMultiplier = true;
+								_moveMultiplier--;
 							}
-							_player.move(a.Direction);
+							if (_isIce) _doIce = true;
 						}
-						else if (a.BlockType == 4)
-						{
-							// Speed up.
-							_bpm += 10;
-							if (_bpm > 160) _bpm = 160;
-						}
-						else if (a.BlockType == 5)
-						{
-							// Slow down.
-							_bpm -= 10;
-							if (_bpm < 80) _bpm = 80;
-						}
-						else if (a.BlockType == 6)
-						{
-							// Freeze block! Chillin!
-							_isIce = true;
-							_cursor.color = 0x50A3FE;
-						}
-						else if (a.BlockType == 7)
-						{
-							// Move multiplier!!!
-							_moveMultiplier *= 2;
-							if (_moveMultiplier > 8) _moveMultiplier = 8;
-						}
+						_player.move(a.Direction);
 					}
+					else if (a.BlockType == 4)
+					{
+						// Speed up.
+						_bpm += 10;
+						if (_bpm > C.TEMPO_MAX) _bpm = C.TEMPO_MAX;
+					}
+					else if (a.BlockType == 5)
+					{
+						// Slow down.
+						_bpm -= 10;
+						if (_bpm < C.TEMPO_MIN) _bpm = C.TEMPO_MIN;
+					}
+					else if (a.BlockType == 6)
+					{
+						// Freeze block! Chillin!
+						_isIce = true;
+						_cursor.color = 0x50A3FE;
+					}
+					else if (a.BlockType == 7)
+					{
+						// Move multiplier!!!
+						_moveMultiplier *= 2;
+						if (_moveMultiplier > 8) _moveMultiplier = 8;
+					}
+					
 				}
+				
 			}
+			_currentArrow = _currentArrow.NextArrow;
 		}
 		
 		public function playRandomNote(scale:Array = null, duration:Number = 0):void
 		{
 			if (scale == null) scale = _currentScale;
-			add(new SoundEntity(FP.choose(scale), duration, 0.5));
+			add(new SoundEntity(FP.choose(scale) * Math.pow(2,FP.rand(3)), duration, 0.5));
 		}
 		
 		protected function get SecondsPerBeat():Number
@@ -273,7 +280,19 @@ package worlds
 				add(new Pitfall(new Point(uint(o.@x) / 16, uint(o.@y) / 16), o.@openDuration, o.@closedDuration, o.@initialDelay, o.@startOpen=="true"));
 			}
 			
+			for each(o in xml.actors.key)
+			{
+				add(new KeyPickup(int(o.@x), int(o.@y), uint(o.@keyID)));
+			}
+			
+			for each(o in xml.actors.door)
+			{
+				add(new Door(int(o.@x), int(o.@y), uint(o.@doorID)));
+			}
+			
 			_player = new Player(new Point(uint(xml.actors.player.@x) / 16, uint(xml.actors.player.@y) / 16));
+			
+			_bpm = xml.@bpm;
 			
 			SetLevelScale(xml.@scale);
 			
@@ -282,7 +301,6 @@ package worlds
 		public function SetLevelScale(scale:String):void
 		{
 			_currentScale = C["SCALE_" + scale];			
-			trace("Level scale is " + scale);
 		}
 		
 		override public function end():void 

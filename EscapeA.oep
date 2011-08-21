@@ -8,6 +8,7 @@
 	
 	<values>
 		<string name="scale" default="C_MAJOR" />
+		<integer name="bpm" default="120" min="60" max="340" />
 	</values>
 	
 	<tilesets>
@@ -34,6 +35,20 @@
 				</values>
 			</object>
 			
+		</folder>
+		
+		<folder name="doors" image="door.png">
+			<object name="key" image="key.png" width="16" height="16">
+				<values>
+					<integer name="keyID" min="0" />
+				</values>
+			</object>
+			
+			<object name="door" image="door.png" width="16" height="16">
+				<values>
+					<integer name="doorID" min="0" />
+				</values>
+			</object>
 		</folder>
 	</objects>
 

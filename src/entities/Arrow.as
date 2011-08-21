@@ -11,12 +11,25 @@ package entities
 	 * @author Zachary Weston Lewis
 	 */
 	public class Arrow extends Entity 
-	{
+	{		
 		public function get Direction():Point
 		{
 			return _direction.clone();
 		}
 		
+		public function get NextArrow():Arrow
+		{
+			return _nextArrow;
+		}
+		
+		public function set NextArrow(a:Arrow):void
+		{
+			_nextArrow = a;
+		}
+		
+		public static var LastArrow:Arrow;
+		
+		protected var _nextArrow:Arrow;
 		protected var _direction:Point;
 		protected var _image:Image;
 		protected var _attachPoint:int;
@@ -30,6 +43,15 @@ package entities
 		
 		public function Arrow(ap:int)
 		{
+			if (LastArrow == null)
+			{
+				LastArrow = this;
+			}
+			else
+			{
+				LastArrow.NextArrow = this;
+				LastArrow = this;
+			}
 			var d:uint;
 			var r:Number = Math.random();
 			_attachPoint = ap;
@@ -40,27 +62,24 @@ package entities
 			if (r < 0.9)
 			{
 				d = FP.rand(4);
+				color = C["COLOR_" + d];
 				switch(d)
 				{
 					case 0:
 						// up
 						_direction = new Point(0, -1);
-						color = 0x00FF00;
 						break;
 					case 1:
 						// right
 						_direction = new Point(1, 0);
-						color = 0xFF8000;
 						break;
 					case 2:
 						// down
 						_direction = new Point(0, 1);
-						color = 0xFF0080;
 						break;
 					case 3:
 						// left
 						_direction = new Point( -1, 0);
-						color = 0x0080C0;
 						break;
 					default:
 						// what the fuck

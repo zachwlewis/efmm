@@ -27,7 +27,7 @@ package
 			super.init();
 			trace("FlashPunk " + FP.VERSION + " has started.");
 			//FP.console.enable();
-			FP.world = new GameWorld(Assets.LEVEL[V.CurrentLevel]);
+			FP.world = new GameWorld(Assets.LEVEL[0]);
 		}
 
 	}

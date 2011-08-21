@@ -39,7 +39,7 @@ package entities
 			super.tick();
 			
 			// Handle x-movement.
-			if (GameWorld(world).Tiles[_gridLocation.x + _direction.x][_gridLocation.y] == 0)
+			if (GameWorld(world).Tiles[_gridLocation.x + _direction.x][_gridLocation.y] == 0 && !collide(C.TYPE_DOOR,(_gridLocation.x + _direction.x)*16,_gridLocation.y*16))
 			{
 				_gridLocation.x = _gridLocation.x + _direction.x
 			}
@@ -49,7 +49,7 @@ package entities
 			}
 			
 			// Handle y-movement.
-			if (GameWorld(world).Tiles[_gridLocation.x][_gridLocation.y + _direction.y] == 0)
+			if (GameWorld(world).Tiles[_gridLocation.x][_gridLocation.y + _direction.y] == 0 && !collide(C.TYPE_DOOR,(_gridLocation.x )*16,(_gridLocation.y+ _direction.y)*16))
 			{
 				_gridLocation.y = _gridLocation.y + _direction.y
 			}
