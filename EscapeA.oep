@@ -1,0 +1,21 @@
+<project>
+	<name>Escape A</name>
+	<settings>
+		<defaultWidth>320</defaultWidth>
+		<defaultHeight>224</defaultHeight>
+		<workingDirectory>gfx</workingDirectory>
+	</settings>
+	
+	<tilesets>
+		<tileset name="tiles" image="tiles.png" tileWidth="16" tileHeight="16" />
+	</tilesets>
+	
+	<objects>
+		<object name="player" image="player.png" width="16" height="16" />
+	</objects>
+
+	<layers>
+		<objects name="actors" gridSize="16" />
+		<tiles name="tiles" gridSize="16" />
+	</layers>
+</project>
