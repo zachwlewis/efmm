@@ -120,7 +120,7 @@ package worlds
 				if (_new.collidePoint(_new.x, _new.y, Input.mouseX, Input.mouseY))
 				{
 					V.ResetData();
-					V.SetLevel(11);
+					V.SetLevel(0);
 					clickSound();
 				}
 				
