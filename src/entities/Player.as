@@ -42,42 +42,37 @@ package entities
 		
 		override public function update():void 
 		{
+			checkCollisions();
 			super.update();
-			if (collide(C.TYPE_ENEMY, x, y) != null)
+		}
+		
+		public function killPlayer():void
+		{
+			for (var i:uint = 0; i < 20; i++)
 			{
-				for (var i:uint = 0; i < 20; i++)
-				{
-					GameWorld(world).playRandomNote(null,1);
-				}
-				world.remove(this);
+				GameWorld(world).playRandomNote(null,1);
 			}
-			
-			var k:KeyPickup = KeyPickup(collide(C.TYPE_KEY, x, y))
-			{
-				if (k != null)
-				{
-					// We hit a key! Let's grab it!
-					if (_keys[k.ID] == null)
-					{
-						_keys[k.ID] = 0;
-					}
-					_keys[k.ID]++;
-					world.remove(k);
-					trace(_keys);
-				}
-			}
+			V.TotalDeaths++;
+			world.remove(this);
 		}
 		
 		public function move(p:Point):Boolean
 		{
 			var xLoc:int = _gridLocation.x + p.x;
 			var yLoc:int = _gridLocation.y + p.y;
-			
 			var collidingArea:uint = GameWorld(world).Tiles[xLoc][yLoc];
 			if (collidingArea == 1)
 			{
 				// Collided into a wall...
+				checkCollisions();
 				return false;
+			}
+			else if (collidingArea == 2 || collide(C.TYPE_ENEMY_MOVER,xLoc*16,yLoc*16) || collide(C.TYPE_ENEMY_MOVER,x,y))
+			{
+				// Collided into a lava!
+				killPlayer();
+				return false;
+				
 			}
 			else 
 			{
@@ -85,7 +80,6 @@ package entities
 				var d:Door = Door(collide(C.TYPE_DOOR, xLoc*16, yLoc*16));
 				if ( d != null)
 				{
-					trace("Uh oh... we'll hit a door!");
 					// We have a door collision. Check against have keys.
 					if (_keys[d.ID] != null && _keys[d.ID] > 0)
 					{
@@ -109,8 +103,31 @@ package entities
 				x = _gridLocation.x * 16;
 				y = _gridLocation.y * 16;
 			}
+			checkCollisions();
 			return true;
 			
+		}
+		
+		public function checkCollisions():void
+		{
+			if (collideTypes([C.TYPE_ENEMY, C.TYPE_ENEMY_MOVER], x, y) != null)
+			{
+				killPlayer();
+			}
+			
+			var k:KeyPickup = KeyPickup(collide(C.TYPE_KEY, x, y))
+			{
+				if (k != null)
+				{
+					// We hit a key! Let's grab it!
+					if (_keys[k.ID] == null)
+					{
+						_keys[k.ID] = 0;
+					}
+					_keys[k.ID]++;
+					world.remove(k);
+				}
+			}
 		}
 		
 	}

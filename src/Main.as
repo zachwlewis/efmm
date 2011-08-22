@@ -4,7 +4,9 @@ package
 	import flash.events.Event;
 	import net.flashpunk.Engine;
 	import net.flashpunk.FP;
+	import worlds.EndWorld;
 	import worlds.GameWorld;
+	import worlds.TitleWorld;
 
 	/**
 	 * Copyright 2011 The Game Studio (http://www.thegamestudio.net). All rights reserved.
@@ -26,8 +28,10 @@ package
 		{
 			super.init();
 			trace("FlashPunk " + FP.VERSION + " has started.");
+			V.LoadLocalData();
 			//FP.console.enable();
-			FP.world = new GameWorld(Assets.LEVEL[0]);
+			FP.world = new TitleWorld();
+			
 		}
 
 	}

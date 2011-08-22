@@ -4,14 +4,14 @@
   <output>
     <movie outputType="Application" />
     <movie input="" />
-    <movie path="..\..\Dropbox\Public\ld21\EscapeA.swf" />
+    <movie path="..\..\Dropbox\Public\ld21\EFMM-Dev.swf" />
     <movie fps="60" />
     <movie width="640" />
     <movie height="480" />
     <movie version="10" />
     <movie minorVersion="0" />
     <movie platform="Flash Player" />
-    <movie background="#FFFFFF" />
+    <movie background="#000000" />
   </output>
   <!-- Other classes to be compiled into your SWF -->
   <classpaths>

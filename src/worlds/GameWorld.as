@@ -46,6 +46,7 @@ package worlds
 		protected var _multiplierText:Text;
 		protected var _isIce:Boolean;
 		protected var _currentArrow:Arrow;
+		protected var _map:Class;
 		
 		public function get Tiles():Vector.<Vector.<uint>>
 		{
@@ -54,6 +55,7 @@ package worlds
 		
 		public function GameWorld(map:Class) 
 		{
+			_map = map;
 			_bpm = 120;
 			_currentTime = 0;
 			_cursorArmed = false;
@@ -68,11 +70,16 @@ package worlds
 			_doMultiplier = false;
 			_isIce = false;
 			_doIce = false;
+			V.SaveLocalData();
 		}
 		
 		override public function begin():void 
 		{
 			super.begin();
+			if (V.CurrentLevel == 0)
+			{
+				addGraphic(new Text("Press escape to the beat!", 0, 70, { width:320, size:8, align:"center" } ));
+			}
 			add(_player);
 			for (var i:uint = 0; i <= FP.screen.width; i += 16)
 			{
@@ -130,25 +137,33 @@ package worlds
 		
 		protected function tick():void
 		{
+			if (this.classCount(Player) != 1)
+			{
+				// Restart our level.
+				removeAll();
+				V.SetLevel(V.CurrentLevel);
+				return;
+			}
+			V.TotalBeats++;
 			var arrows:Vector.<Arrow> = new Vector.<Arrow>();
 			add(new SoundEntity(_currentScale[0]/2,0,0.2));
 			addArrow();
 			// We need to update our enemies.
 			if (_cursorArmed || _doMultiplier || _doIce)
-			{
-				// So, the player is going to do something. Move the enemies.
-				var ta:Vector.<TickableEntity> = new Vector.<TickableEntity>();
-				getClass(TickableEntity, ta);
-				for each(var e:TickableEntity in ta)
-				{
-					e.tick()
-				}
-				
-				
+			{				
+				V.TotalMoves++;
 				// Alright! We're going to fire off the move command, and play a note.
 				playRandomNote(_currentScale);
 				_cursor.alpha = 0.8;
 				_cursorArmed = false;
+				
+				// So, the player is going to do something. Move the enemies after the player.
+				var ta:Vector.<TickableEntity> = new Vector.<TickableEntity>();
+				getClass(TickableEntity, ta);
+				for each(var e:TickableEntity in ta)
+				{
+					e.tick();
+				}
 				
 				if (_doIce || _doMultiplier)
 				{

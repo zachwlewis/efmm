@@ -23,6 +23,7 @@ package
 		// Types
 		public static const TYPE_ARROW:String = "arrow";
 		public static const TYPE_ENEMY:String = "enemy";
+		public static const TYPE_ENEMY_MOVER:String = "enemy-mover";
 		public static const TYPE_KEY:String = "key";
 		public static const TYPE_DOOR:String = "door";
 		

@@ -31,7 +31,7 @@ package entities
 			x = _gridLocation.x * 16;
 			y = _gridLocation.y * 16;
 			
-			type = C.TYPE_ENEMY;
+			type = C.TYPE_ENEMY_MOVER;
 		}
 		
 		override public function tick():void 
